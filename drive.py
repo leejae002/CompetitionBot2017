@@ -94,7 +94,7 @@ class DriveBot(Module):
             talon.setPID(pid[0], pid[1], pid[2], pid[3])
 
     def testInit(self):
-        print("In Debug Mode")
+        print("--- Debug Mode ---")
         print("Each joystick Y axis controls a motor")
         print("Each directional buttons axis controls a motor")
         print("X flips the motors joysticks and buttons control")
@@ -102,14 +102,16 @@ class DriveBot(Module):
     def testPeriodic(self):
         # if true, joysticks control front motors
         # if false, joysticks control back motors
-        testModeFront = True
+        testModeJoysticksFront = True
 
         # switches joysticks and dir buttons
         if self.gamepad.getRawButton(Gamepad.Y):
-            if testModeFront:
-                testModeFront = False
+            if testModeJoysticksFront:
+                print("Joysticks control rear motors")
+                testModeJoysticksFront = False
             else:
-                testModeFront = True
+                print("Joysticks control front motors")
+                testModeJoysticksFront = True
 
         # get values -1 to 1
         joystickLeft = self.gamepad.getLY()
@@ -127,7 +129,8 @@ class DriveBot(Module):
         elif self.gamepad.getRawButton(Gamepad.LEFT):
             directionalHorizontal = -1
 
-        if testModeFront:
+        # sets motors
+        if testModeJoysticksFront:
             self.talons[0].set(joystickLeft)
             self.talons[1].set(joystickRight)
             self.talons[2].set(directionalVertical)
