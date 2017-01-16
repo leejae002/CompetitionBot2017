@@ -11,6 +11,7 @@ from seamonsters.drive import DriveInterface
 from seamonsters.drive import AccelerationFilterDrive
 from seamonsters.drive import FieldOrientedDrive
 from seamonsters.holonomicDrive import HolonomicDrive
+from seamonsters.logging import LogState
 
 from robotpy_ext.common_drivers.navx import AHRS
 import math
@@ -28,11 +29,16 @@ class DriveBot(Module):
         
         for talon in self.talons:
             talon.setFeedbackDevice(wpilib.CANTalon.FeedbackDevice.QuadEncoder)
+
+        self.driveModeLog = LogState("Drive mode")
         
         self.currentPID = None
-        self.normalPID = (10.0, 0.0, 3.0, 0.0)
+        self.fastPID = (3.0, 0.0, 3.0, 0.0)
+        self.fastPIDScale = 0.1
         self.slowPID = (30.0, 0.0, 3.0, 0.0)
-        self._setPID(self.normalPID)
+        self.slowPIDScale = 0.01
+        self.pidLog = LogState("Drive PID")
+        self._setPID(self.fastPID)
         
         # 4156 ticks per wheel rotation
         # encoder has 100 raw ticks -- with a QuadEncoder that makes 400 ticks
@@ -46,13 +52,16 @@ class DriveBot(Module):
         self.drive = AccelerationFilterDrive(self.drive)
         
         self.ahrs = AHRS.create_spi() # the NavX
-        self.drive = FieldOrientedDrive(self.drive, self.ahrs)
+        self.drive = FieldOrientedDrive(self.drive, self.ahrs, offset=math.pi/2)
+        self.drive.zero()
         
         self.drive.setDriveMode(DriveInterface.DriveMode.POSITION)
         
         self.normalScale = 0.3
         self.fastScale = 0.5
         self.slowScale = 0.05
+
+        self.joystickExponent = 2
         
     def teleopInit(self):
         print("Left Bumper: Slower")
@@ -61,32 +70,39 @@ class DriveBot(Module):
     def teleopPeriodic(self):
         # change drive mode with A, B, and X
         if   self.gamepad.getRawButton(Gamepad.A):
-            print("Voltage mode!")
             self.drive.setDriveMode(DriveInterface.DriveMode.VOLTAGE)
         elif self.gamepad.getRawButton(Gamepad.B):
-            print("Speed mode!")
             self.drive.setDriveMode(DriveInterface.DriveMode.SPEED)
         elif self.gamepad.getRawButton(Gamepad.X):
-            print("Position mode!")
             self.drive.setDriveMode(DriveInterface.DriveMode.POSITION)
+        self.driveModeLog.update(self._driveModeName(self.drive.getDriveMode()))
         
         scale = self.normalScale
         if self.gamepad.getRawButton(Gamepad.LT): # faster button
             scale = self.fastScale
         if self.gamepad.getRawButton(Gamepad.LB): # slower button
             scale = self.slowScale
-            self._setPID(self.slowPID)
-        else:
-            self._setPID(self.normalPID)
         
-        turn = -self.gamepad.getRX() * abs(self.gamepad.getRX()) \
-            * (scale / 2)
-        magnitude = self.gamepad.getLMagnitude()**2 * scale
+        turn = self._joystickPower(-self.gamepad.getRX()) * (scale / 2)
+        magnitude = self._joystickPower(self.gamepad.getLMagnitude()) * scale
         direction = self.gamepad.getLDirection()
+
+        driveScale = max(magnitude, abs(turn * 2))
+        self._setPID(self._lerpPID(driveScale))
         
         self.drive.drive(magnitude, direction, turn)
+
+    def _driveModeName(self, driveMode):
+        if driveMode == DriveInterface.DriveMode.VOLTAGE:
+            return "Voltage"
+        if driveMode == DriveInterface.DriveMode.SPEED:
+            return "Speed"
+        if driveMode == DriveInterface.DriveMode.POSITION:
+            return "Position"
+        return "Unknown"
         
     def _setPID(self, pid):
+        self.pidLog.update(pid)
         if pid == self.currentPID:
             return
         self.currentPID = pid
@@ -105,6 +121,29 @@ class DriveBot(Module):
             self.drive.drive(0.3,(math.pi)/2,0)
         else:
             self.drive.drive(0,0,0)
+
+    def _lerpPID(self, magnitude):
+        if magnitude <= self.slowPIDScale:
+            return self.slowPID
+        elif magnitude >= self.fastPIDScale:
+            return self.fastPID
+        else:
+            # 0 - 1
+            scale = (magnitude - self.slowPIDScale) / \
+                    (self.fastPIDScale - self.slowPIDScale)
+            pidList = [ ]
+            for i in range(0, 4):
+                slowValue = self.slowPID[i]
+                fastValue = self.fastPID[i]
+                value = (fastValue - slowValue) * scale + slowValue
+                pidList.append(value)
+            return tuple(pidList)
+
+    def _joystickPower(self, value):
+        newValue = float(abs(value)) ** float(self.joystickExponent)
+        if value < 0:
+            newValue = -newValue
+        return newValue
 
 if __name__ == "__main__":
     wpilib.run(DriveBot)
