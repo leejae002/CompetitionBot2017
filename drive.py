@@ -95,20 +95,16 @@ class DriveBot(Module):
 
     def autonomousInit(self):
         self._setPID((3.0,0.0,2.0,0.0))
-
         self.count = 0
+        self.startPosition = self.talons[0].getPosition()
 
     def autonomousPeriodic(self):
         self.count = self.count + 1
-        if self.count < 250:
+        currentPosition = self.talons[0].getPosition()
+        if abs(self.startPosition - currentPosition) < 10000:
             self.drive.drive(0.3,(math.pi)/2,0)
-        elif self.count < 500:
-            self.drive.drive(0.0,0.0,0.0)
-        elif self.count < 750:
-            self.drive.drive(0.3,(3*(math.pi))/2,0)
         else:
             self.drive.drive(0,0,0)
-
 
 if __name__ == "__main__":
     wpilib.run(DriveBot)
