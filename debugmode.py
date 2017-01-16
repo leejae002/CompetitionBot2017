@@ -5,9 +5,12 @@ import seamonsters.fix2017
 from seamonsters.wpilib_sim import simulate
 from seamonsters.modularRobot import Module
 from seamonsters.gamepad import Gamepad
-from robot import DriveBot
 
 class DebugMode(Module):
+
+    def __init__(self, driveBot):
+        super().__init__(initSuper=False)
+        self.driveBot = driveBot
 
     def testInit(self):
         print("--- Debug Mode ---")
@@ -21,7 +24,7 @@ class DebugMode(Module):
         testModeJoysticksFront = True
 
         # switches joysticks and dir buttons
-        if DriveBot.gamepad.getRawButton(Gamepad.Y):
+        if self.driveBot.gamepad.getRawButton(Gamepad.Y):
             if testModeJoysticksFront:
                 print("Joysticks control rear motors")
                 testModeJoysticksFront = False
@@ -30,32 +33,32 @@ class DebugMode(Module):
                 testModeJoysticksFront = True
 
         # get values -1 to 1
-        joystickLeft = DriveBot.gamepad.getLY()
-        joystickRight = DriveBot.gamepad.getRY()
+        joystickLeft = self.driveBot.gamepad.getLY()
+        joystickRight = self.driveBot.gamepad.getRY()
 
         directionalVertical = 0
-        if DriveBot.gamepad.getRawButton(Gamepad.UP):
+        if self.driveBot.gamepad.getRawButton(Gamepad.UP):
             directionalVertical = 1
-        elif DriveBot.gamepad.getRawButton(Gamepad.DOWN):
+        elif self.driveBot.gamepad.getRawButton(Gamepad.DOWN):
             directionalVertical = -1
 
         directionalHorizontal = 0
-        if DriveBot.gamepad.getRawButton(Gamepad.RIGHT):
+        if self.driveBot.gamepad.getRawButton(Gamepad.RIGHT):
             directionalHorizontal = 1
-        elif DriveBot.gamepad.getRawButton(Gamepad.LEFT):
+        elif self.driveBot.gamepad.getRawButton(Gamepad.LEFT):
             directionalHorizontal = -1
 
         # sets motors
         if testModeJoysticksFront:
-            DriveBot.talons[0].set(joystickLeft)
-            DriveBot.talons[1].set(joystickRight)
-            DriveBot.talons[2].set(directionalVertical)
-            DriveBot.talons[3].set(directionalHorizontal)
+            self.driveBot.talons[0].set(joystickLeft)
+            self.driveBot.talons[1].set(joystickRight)
+            self.driveBot.talons[2].set(directionalVertical)
+            self.driveBot.talons[3].set(directionalHorizontal)
         else:
-            DriveBot.talons[0].set(directionalVertical)
-            DriveBot.talons[1].set(directionalHorizontal)
-            DriveBot.talons[2].set(joystickLeft)
-            DriveBot.talons[3].set(joystickRight)
+            self.driveBot.talons[0].set(directionalVertical)
+            self.driveBot.talons[1].set(directionalHorizontal)
+            self.driveBot.talons[2].set(joystickLeft)
+            self.driveBot.talons[3].set(joystickRight)
 
 if __name__ == "__main__":
     wpilib.run(DebugMode)
