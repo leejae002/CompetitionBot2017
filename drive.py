@@ -111,6 +111,7 @@ class DriveBot(Module):
             talon.setPID(pid[0], pid[1], pid[2], pid[3])
 
     def autonomousInit(self):
+        self.holoDrive.zeroEncoderTargets()
         self._setPID((3.0,0.0,2.0,0.0))
         self.count = 0
         self.startPosition = self.talons[0].getPosition()
