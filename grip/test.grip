@@ -1,0 +1,54 @@
+<edu.wpi.grip.core.Pipeline>
+  <sources>
+    <edu.wpi.grip.core.sources.ImageFileSource>
+      <property name="path" value="C:\Users\Tad\Desktop\FRC2605\2017VisionExample\Vision Images\LED Peg\1ftH3ftD0Angle0Brightness.jpg"/>
+    </edu.wpi.grip.core.sources.ImageFileSource>
+  </sources>
+  <steps>
+    <edu.wpi.grip.core.Step name="HSL Threshold">
+      <edu.wpi.grip.core.sockets.InputSocketImpl step="0" socket="0"/>
+      <edu.wpi.grip.core.sockets.InputSocketImpl step="0" socket="1">
+        <value>
+          <double>0.0</double>
+          <double>179.02877697841726</double>
+        </value>
+      </edu.wpi.grip.core.sockets.InputSocketImpl>
+      <edu.wpi.grip.core.sockets.InputSocketImpl step="0" socket="2">
+        <value>
+          <double>0.0</double>
+          <double>255.0</double>
+        </value>
+      </edu.wpi.grip.core.sockets.InputSocketImpl>
+      <edu.wpi.grip.core.sockets.InputSocketImpl step="0" socket="3">
+        <value>
+          <double>44.33453273858956</double>
+          <double>255.0</double>
+        </value>
+      </edu.wpi.grip.core.sockets.InputSocketImpl>
+      <edu.wpi.grip.core.sockets.OutputSocketImpl step="0" socket="0" previewed="true"/>
+    </edu.wpi.grip.core.Step>
+  </steps>
+  <connections>
+    <edu.wpi.grip.core.Connection>
+      <edu.wpi.grip.core.sockets.OutputSocketImpl source="0" socket="0" previewed="true"/>
+      <edu.wpi.grip.core.sockets.InputSocketImpl step="0" socket="0"/>
+    </edu.wpi.grip.core.Connection>
+  </connections>
+  <settings>
+    <teamNumber>0</teamNumber>
+    <publishAddress>roboRIO-0-FRC.local</publishAddress>
+    <deployAddress>roboRIO-0-FRC.local</deployAddress>
+    <deployDir>/home/lvuser</deployDir>
+    <deployUser>lvuser</deployUser>
+    <deployJavaHome>/usr/local/frc/JRE/</deployJavaHome>
+    <deployJvmOptions>-Xmx50m -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError -XX:MaxNewSize=16m</deployJvmOptions>
+  </settings>
+  <codeGenerationSettings>
+    <language>Java</language>
+    <className>GripPipeline</className>
+    <implementWpilibPipeline>false</implementWpilibPipeline>
+    <saveDir>C:\Users\Tad\GRIP</saveDir>
+    <packageName></packageName>
+    <moduleName>grip</moduleName>
+  </codeGenerationSettings>
+</edu.wpi.grip.core.Pipeline>
